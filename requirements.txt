@@ -4,6 +4,5 @@ dash_bootstrap_components
 pandas
 numpy
 matplotlib
-pybase64
-requires.io
+base64
 threading
