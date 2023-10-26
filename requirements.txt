@@ -4,5 +4,3 @@ dash_bootstrap_components
 pandas
 numpy
 matplotlib
-base64
-threading
