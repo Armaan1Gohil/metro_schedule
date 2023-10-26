@@ -88,6 +88,7 @@ def generate_matplotlib_graph(headway, dwell_time, station_name, station_dis):
         return buf.read()
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
  
 app.layout = dbc.Container(
     [   
