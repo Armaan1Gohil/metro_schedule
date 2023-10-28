@@ -103,7 +103,7 @@ app.layout = dbc.Container(
                 dbc.Row(
                 [
                     dbc.Col(dbc.Label("Number of Stations"), lg=2, sm=12, className='text-lg-right'),
-                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations", style={'margin-bottom': '0.5rem'}), lg=4, sm=12),
+                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations", style={'margin-bottom': '0.5rem'}, required=True), lg=4, sm=12),
                     dbc.Col(dbc.Button("Create", color="primary", id='button_click'), lg=1, sm=12),
                 ], className='row text-center justify-content-center'),
         ]),
