@@ -1,0 +1,9 @@
+@media (min-width: 1024px) {
+    .text-lg-right { text-align: right;
+                     margin-top: 0.5rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .body-short { padding-left: 50%;
+    padding-right: 50%; }
+  }
