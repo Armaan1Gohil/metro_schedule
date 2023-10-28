@@ -1,4 +1,4 @@
-# metro_schedule
+# Metro Train Schedule
 Web application to produce train schedule for metros.
 Which can further be used in the simulation reports.
 
