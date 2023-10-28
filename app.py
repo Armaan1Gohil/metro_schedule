@@ -135,7 +135,6 @@ app.layout = dbc.Container(
     prevent_initial_call=True
 )
 def update_output(n_clicks, no_of_stations):
-    print(no_of_stations)
     if no_of_stations is None or no_of_stations == '':
         return(dbc.Row(dbc.Col(dbc.Alert('Number of Stations is Empty!', color='danger')))) # Error if staions are less than 2    
     elif no_of_stations < 2: # Stations cannot be less than 1
