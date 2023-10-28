@@ -1,5 +1,5 @@
 import dash
-from dash import Dash, html, dcc, Input, State, Output, ctx, ALL, Patch  # pip install dash
+from dash import Dash, html, dcc, Input, State, Output, ALL, Patch  # pip install dash
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc   # pip install dash-bootstrap-components
 import pandas as pd     # pip install pandas
@@ -90,6 +90,8 @@ def generate_matplotlib_graph(headway, dwell_time, station_name, station_dis):
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
  
+app.title = 'Train Schedule' 
+ 
 app.layout = dbc.Container(
     [   
         html.Br(),
@@ -100,28 +102,28 @@ app.layout = dbc.Container(
                  [
                 dbc.Row(
                 [
-                    dbc.Col(dbc.Label("Number of Stations"), lg=2, sm=12, style={'margin-bottom': 'auto'}),
-                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations", style={'margin-bottom': '0.5rem'}), lg=8, sm=12),
-                    dbc.Col(dbc.Button("Create", color="primary", id='button_click'), lg=2, sm=12),
-                ]),
+                    dbc.Col(dbc.Label("Number of Stations"), lg=2, sm=12, className='text-lg-right'),
+                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations", style={'margin-bottom': '0.5rem'}), lg=4, sm=12),
+                    dbc.Col(dbc.Button("Create", color="primary", id='button_click'), lg=1, sm=12),
+                ], className='row text-center justify-content-center'),
         ]),
-    ]),
+    ],),
         html.Div([
             # Enter headway and dwell time
             html.Br(),
             html.H3('Headway and Dwell Time:'),
             dbc.Row([
-                dbc.Col(dbc.Label('Headway'), lg=2, sm=12, className='text-sm-right'),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway'), lg=4, sm=12),
-                dbc.Col(dbc.Label('Dwell Time'), lg=2, sm=12),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time'), lg=4, sm=12),
+                dbc.Col(dbc.Label('Headway'), lg=2, sm=12, className='text-lg-right'),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway', required=True), lg=4, sm=12),
+                dbc.Col(dbc.Label('Dwell Time'), lg=2, sm=12, className='text-lg-right'),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time', required=True), lg=4, sm=12),
             ], justify='center', align='center'),
             html.Br()
     ]),
-        html.Br(),
         html.Div(id='add_stations', children=[]),
         html.Br(),
-        html.Div(html.Img(id='graph'), className='text-center')
+        html.Div(html.Img(id='graph'), className='text-center'),
+        html.Div(id='error_handle', children=[]),
     ]
 )
 
@@ -133,21 +135,25 @@ app.layout = dbc.Container(
     prevent_initial_call=True
 )
 def update_output(n_clicks, no_of_stations):
-    if no_of_stations < 2: # Stations cannot be less than 1
+    print(no_of_stations)
+    if no_of_stations is None or no_of_stations == '':
+        return(dbc.Row(dbc.Col(dbc.Alert('Number of Stations is Empty!', color='danger')))) # Error if staions are less than 2    
+    elif no_of_stations < 2: # Stations cannot be less than 1
         return(dbc.Row(dbc.Col(dbc.Alert('Error: Enter a Value Greater than 2!', color='danger')))) # Error if staions are less than 2
     else:
         stations = Patch()
         stations.clear()
         # Creates the inputs for station name and chainage depending on the number of stations
+        stations.append(html.Hr())
         stations.append(html.H3('Enter Station and Chainage Details:'))
         stations.append(html.P(html.I('Start Chainage from zero')))
         for i in range(no_of_stations):
             stations.append(
                 dbc.Row([
-                    dbc.Col(dbc.Label('Station Name'), lg=3, sm=12),
-                    dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}), lg=3, sm=12),
-                    dbc.Col(dbc.Label('Chainage'), lg=3, sm=12),
-                    dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}), lg=3, sm=12), 
+                    dbc.Col(dbc.Label('Station Name'), lg=2, sm=12, className='text-lg-right'),
+                    dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}, required=True), lg=4, sm=12),
+                    dbc.Col(dbc.Label('Chainage'), lg=2, sm=12, className='text-lg-right'),
+                    dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}, required=True), lg=4, sm=12), 
                 ], style={'margin-bottom': '0.5rem'}),
             )
         stations.append(html.Br())
@@ -157,6 +163,7 @@ def update_output(n_clicks, no_of_stations):
 
 @app.callback(
      Output('graph', 'src'),
+     Output('error_handle', 'children'),
      Input({'type': 'create_button', 'index': ALL}, 'n_clicks'),
      [State('headway', 'value'),
      State('dwell_time', 'value'),
@@ -165,12 +172,13 @@ def update_output(n_clicks, no_of_stations):
      prevent_initial_call = True,
 )
 def plot_graph(n_clicks, headway, dwell_time, station_name, station_dis):
-    if any(n_clicks):    
-        fig_bytes = generate_matplotlib_graph(headway, dwell_time, station_name, station_dis)
-        fig_base64 = base64.b64encode(fig_bytes).decode('utf-8')
-        return f'data:img/png;base64, {fig_base64}'
-    else:
-        dash.no_update
+    if any(n_clicks):
+        if headway is None or dwell_time is None or station_name is None or station_dis is None:
+            return None, (dbc.Row(dbc.Col(dbc.Alert('Check Empty Input!', color='danger')))) # Error if staions are less than 2    
+        else:
+            fig_bytes = generate_matplotlib_graph(headway, dwell_time, station_name, station_dis)
+            fig_base64 = base64.b64encode(fig_bytes).decode('utf-8')
+            return f'data:img/png;base64, {fig_base64}', None
 
 if __name__ == '__main__':
     app.run_server(debug=False, threaded=True, port=8002)
