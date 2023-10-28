@@ -100,11 +100,10 @@ app.layout = dbc.Container(
                  [
                 dbc.Row(
                 [
-                    dbc.Col(dbc.Label("Number of Stations"), width="auto", style={'margin-top': '0.5rem'}),
-                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations")),
-                    dbc.Col(dbc.Button("Create", color="primary", id='button_click'), width="auto"),
-                ],style={'margin-left': '25%', 'margin-right': '25%'}
-                ),
+                    dbc.Col(dbc.Label("Number of Stations"), lg=2, sm=12, style={'margin-bottom': 'auto'}),
+                    dbc.Col(dbc.Input(type="number", id="no_of_stations", placeholder="Enter Number of Stations", style={'margin-bottom': '0.5rem'}), lg=8, sm=12),
+                    dbc.Col(dbc.Button("Create", color="primary", id='button_click'), lg=2, sm=12),
+                ]),
         ]),
     ]),
         html.Div([
@@ -112,11 +111,11 @@ app.layout = dbc.Container(
             html.Br(),
             html.H3('Headway and Dwell Time:'),
             dbc.Row([
-                dbc.Col(dbc.Label('Headway'), style={'margin-top': '0.5rem', 'text-align': 'right'}),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway'), width='4'),
-                dbc.Col(dbc.Label('Dwell Time'), style={'margin-top': '0.5rem', 'text-align': 'right'}),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time'), width='4'),
-            ]),
+                dbc.Col(dbc.Label('Headway'), lg=2, sm=12, className='text-sm-right'),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway'), lg=4, sm=12),
+                dbc.Col(dbc.Label('Dwell Time'), lg=2, sm=12),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time'), lg=4, sm=12),
+            ], justify='center', align='center'),
             html.Br()
     ]),
         html.Br(),
@@ -134,27 +133,26 @@ app.layout = dbc.Container(
     prevent_initial_call=True
 )
 def update_output(n_clicks, no_of_stations):
-        if n_clicks is None or n_clicks == 0: # Output works when clicked on button create
-            raise PreventUpdate
-        if no_of_stations < 2: # Stations cannot be less than 1
-            return(dbc.Row(dbc.Col(dbc.Alert('Error: Enter a Value Greater than 2!', color='danger')))) # Error if staions are less than 2
-        else:
-            stations = Patch()
-            stations.clear()
-            # Creates the inputs for station name and chainage depending on the number of stations
-            stations.append(html.H3('Enter Station and Chainage Details:'))
-            for i in range(no_of_stations):
-                stations.append(
-                    dbc.Row([
-                        dbc.Col(dbc.Label('Station Name'), width='2', style={'margin-top': '0.5rem', 'text-align': 'right'}),
-                        dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}), width='4'),
-                        dbc.Col(dbc.Label('Chainage'), width='2', style={'margin-top': '0.5rem', 'text-align': 'right'}),
-                        dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}), width='4'), 
-                    ], style={'margin-bottom': '0.5rem'}),
-                    )
-            stations.append(html.Br())
-            stations.append(dbc.Button("Generate Graph", color='primary', id={'type': 'create_button', 'index': 1}, style={'margin-left': '50%'})) # Button to generate graph
-            return stations
+    if no_of_stations < 2: # Stations cannot be less than 1
+        return(dbc.Row(dbc.Col(dbc.Alert('Error: Enter a Value Greater than 2!', color='danger')))) # Error if staions are less than 2
+    else:
+        stations = Patch()
+        stations.clear()
+        # Creates the inputs for station name and chainage depending on the number of stations
+        stations.append(html.H3('Enter Station and Chainage Details:'))
+        stations.append(html.P(html.I('Start Chainage from zero')))
+        for i in range(no_of_stations):
+            stations.append(
+                dbc.Row([
+                    dbc.Col(dbc.Label('Station Name'), lg=3, sm=12),
+                    dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}), lg=3, sm=12),
+                    dbc.Col(dbc.Label('Chainage'), lg=3, sm=12),
+                    dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}), lg=3, sm=12), 
+                ], style={'margin-bottom': '0.5rem'}),
+            )
+        stations.append(html.Br())
+        stations.append(html.Div(dbc.Button("Generate Graph", color='primary', id={'type': 'create_button', 'index': 1}), className='text-center')) # Button to generate graph
+        return stations
                 
 
 @app.callback(
