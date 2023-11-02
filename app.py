@@ -242,4 +242,4 @@ def plot_graph(n_clicks, headway, dwell_time, station_name, station_dis):
         dash.no_update
 
 if __name__ == '__main__':
-    app.run_server(debug=True, threaded=True, port=8002)
+    app.run_server(debug=False, threaded=True, port=8002)
