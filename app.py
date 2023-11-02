@@ -8,7 +8,7 @@ import pandas as pd     # pip install pandas
 import numpy as np
 
 def generate_graph(headway, dwell_time, station_name, station_dis):
-    no_of_trains = 2*(len(station_dis))  # No of trains running
+    no_of_trains = (len(station_dis))  # No of trains running
     train_data = {}
 
     # Generating points for graph
@@ -42,43 +42,44 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
         train_data[f'x{down_train}'] = train_data[f'x{train}'] # Generates x-axis points
         train_data[f'y{down_train}'] = train_data[f'y{train}'][::-1] # Generates y-axis points
         
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-        # Plot uplines & downlines
-        for i in range(no_of_trains):
-            x_data = train_data[f'x{i}']
-            y_data = train_data[f'y{i}']
+    # Plot uplines & downlines
+    for i in range(no_of_trains):
+        x_data = train_data[f'x{i}']
+        y_data = train_data[f'y{i}']
 
-            fig.add_trace(
-                go.Scatter(x=x_data, y=y_data, mode='lines', showlegend=False, line=dict(color='#1f77b4'))
-            ) # Plot up lines
+        fig.add_trace(
+            go.Scatter(x=x_data, y=y_data, mode='lines', showlegend=False, line=dict(color='#1f77b4'))
+        ) # Plot up lines
 
-            xo_data = train_data[f'x{i+no_of_trains}']
-            yo_data = train_data[f'y{i+no_of_trains}']
-            
-            fig.add_trace(
-                go.Scatter(x=xo_data, y=yo_data, mode='lines',  showlegend=False, line=dict(color='#ff7f0e')        
-                )
-            ) # Plot down lines
+        xo_data = train_data[f'x{i+no_of_trains}']
+        yo_data = train_data[f'y{i+no_of_trains}']
+        
+        fig.add_trace(
+            go.Scatter(x=xo_data, y=yo_data, mode='lines',  showlegend=False, line=dict(color='#ff7f0e')        
+            )
+        ) # Plot down lines
 
-            
-        # Add grey line for stations
-        for i, station in enumerate(station_dis): 
-            x_secondary = list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1] + 1))
-            y_secondary = [station]*(train_data[f'x{no_of_trains-1}'][-1] + 1)
-            
-            line_color = 'rgba(162, 162, 161, 0.2)'
-            fig.add_trace(
-                go.Scatter(x=x_secondary, y=y_secondary, mode='lines', name=station_name[i], showlegend=False, line=dict(color=line_color, width=8),
-                        ),
-                secondary_y=True
-            ) # Plot station lines
+        
+    # Add grey line for stations
+    for i, station in enumerate(station_dis): 
+        x_secondary = list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1] + 1))
+        y_secondary = [station]*(train_data[f'x{no_of_trains-1}'][-1] + 1)
+        
+        line_color = 'rgba(162, 162, 161, 0.2)'
+        fig.add_trace(
+            go.Scatter(x=x_secondary, y=y_secondary, mode='lines', name=station_name[i], showlegend=False, line=dict(color=line_color, width=8),
+                    ),
+            secondary_y=True
+        ) # Plot station lines
 
-        # Fill for start and end train graphs
-        last_x = train_data[f'x{no_of_trains - 1}']
-        last_train_up = train_data[f'y{no_of_trains - 1}']
-        last_train_down = train_data[f'y{no_of_trains}']
-        for i in range(1, len(station_dis)+1):
+    # Fill for start and end train graphs
+    last_x = train_data[f'x{no_of_trains - 1}']
+    last_train_up = train_data[f'y{no_of_trains - 1}']
+    last_train_down = train_data[f'y{no_of_trains}']
+    for i in range(1, len(station_dis)+1):
+        if len(last_train_up)-headway*i > 0:
             ys = train_data['y0'][headway*(i):]
             xs = list(np.arange(0, len(ys)))
 
@@ -109,49 +110,52 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
                 )
             ) # Down end trains
 
-        # Create legend entries for "upline" and "downline"
-        fig.add_trace(go.Scatter(x=[None], y=[None], mode='lines', line=dict(color='#1f77b4'), name='Upline'))
-        fig.add_trace(go.Scatter(x=[None], y=[None], mode='lines', line=dict(color='#ff7f0e'), name='Downline')) 
-            
-        # Axis lable and title
-        fig.update_yaxes(
-            title_text='Station Name',
+    # Create legend entries for "upline" and "downline"
+    fig.add_trace(go.Scatter(x=[None], y=[None], mode='lines', line=dict(color='#1f77b4'), name='Upline'))
+    fig.add_trace(go.Scatter(x=[None], y=[None], mode='lines', line=dict(color='#ff7f0e'), name='Downline')) 
+        
+    # Axis lable and title
+    fig.update_yaxes(
+        title_text='Station Name',
+        tickmode='array',
+        tickvals=station_dis,
+        ticktext=station_name,
+        ticks='outside',
+        linecolor='lightgrey',
+        secondary_y=True  # This makes it the second y-axis
+    )
+
+    fig.update_layout(
+        plot_bgcolor='white',
+        showlegend=True,
+        legend=dict(itemsizing='constant', x=0, y=-0.2),
+        
+        scene=dict(aspectmode='cube'),
+        height=750,
+
+        title_text='Train Schedule',
+        
+        xaxis=dict(
+            mirror=True,
+            gridcolor='lightgrey',
+            showline=True,
+            linecolor='lightgrey',
+            title=dict(text='Time in Minutes'),
+            ticks='outside',
+            tickmode='array',
+            tickvals=list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1]+1, step=headway)) + [train_data[f'x{no_of_trains - 1}'][-1]] + [last_x],
+        ),
+        
+        yaxis=dict(
+            title=dict(text='Chainage (km)'),
             tickmode='array',
             tickvals=station_dis,
-            ticktext=station_name,
             ticks='outside',
             linecolor='lightgrey',
-            secondary_y=True  # This makes it the second y-axis
-        )
+        ),
+    )
 
-        fig.update_layout(title_text='Train Schedule')
-
-        fig.update_layout(
-            plot_bgcolor='white',
-            showlegend=True,
-            legend=dict(itemsizing='constant', x=0, y=-0.2),
-            
-            xaxis=dict(
-                mirror=True,
-                gridcolor='lightgrey',
-                showline=True,
-                linecolor='lightgrey',
-                title=dict(text='Time in Minutes'),
-                ticks='outside',
-                tickmode='array',
-                tickvals=list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1]+1, step=headway)) + [train_data[f'x{no_of_trains - 1}'][-1]] + [last_x],
-            ),
-            
-            yaxis=dict(
-                title=dict(text='Chainage (km)'),
-                tickmode='array',
-                tickvals=station_dis,
-                ticks='outside',
-                linecolor='lightgrey',
-            ),
-        )
-
-        return fig
+    return fig
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
@@ -180,15 +184,15 @@ app.layout = dbc.Container(
             html.H3('Headway and Dwell Time:'),
             dbc.Row([
                 dbc.Col(dbc.Label('Headway'), lg=2, sm=12, className='text-lg-right'),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway', required=True), lg=4, sm=12),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Headway (In Min)', id='headway', required=True, style={'margin-bottom': '1rem'}), lg=4, sm=12),
                 dbc.Col(dbc.Label('Dwell Time'), lg=2, sm=12, className='text-lg-right'),
-                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time', required=True), lg=4, sm=12),
+                dbc.Col(dbc.Input(type='number', placeholder='Enter Dwell Time (In Min)', id='dwell_time', required=True, style={'margin-bottom': '1rem'}), lg=4, sm=12),
             ], justify='center', align='center'),
             html.Br()
     ]),
         html.Div(id='add_stations', children=[]),
         html.Br(),
-        dcc.Graph(id='graph'),
+        dcc.Graph(id='graph', style={'visibility': 'hidden'}),
         html.Div(id='error_handle', children=[]),
     ]
 )
@@ -216,10 +220,10 @@ def update_output(n_clicks, no_of_stations):
             stations.append(
                 dbc.Row([
                     dbc.Col(dbc.Label('Station Name'), lg=2, sm=12, className='text-lg-right'),
-                    dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}, required=True, style={'margin-bottom': '0.5rem'}), lg=4, sm=12),
+                    dbc.Col(dbc.Input(type='text', placeholder=f'Enter Station Name {i+1}', id={'type': 'station_name_value', 'index': i}, required=True, style={'margin-bottom': '1rem'}), lg=4, sm=12),
                     dbc.Col(dbc.Label('Chainage'), lg=2, sm=12, className='text-lg-right'),
-                    dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}, required=True), style={'margin-bottom': '0.5rem'}, lg=4, sm=12), 
-                ], style={'margin-bottom': '0.5rem'}),
+                    dbc.Col(dbc.Input(type='number', placeholder=f'Enter Chainage {i+1} (In Km)', id={'type': 'chainage_num_value', 'index': i}, required=True), style={'margin-bottom': '1rem'}, lg=4, sm=12), 
+                ], style={'margin-bottom': '1rem'}),
             )
         stations.append(html.Br())
         stations.append(html.Div(dbc.Button("Generate Graph", color='primary', id={'type': 'create_button', 'index': 1}), className='text-center')) # Button to generate graph
@@ -227,6 +231,7 @@ def update_output(n_clicks, no_of_stations):
 
 @app.callback(
      Output('graph', 'figure'),
+     Output('graph', 'style'),
      Input({'type': 'create_button', 'index': ALL}, 'n_clicks'),
      [State('headway', 'value'),
      State('dwell_time', 'value'),
@@ -235,11 +240,11 @@ def update_output(n_clicks, no_of_stations):
      prevent_initial_call = True,
 )
 def plot_graph(n_clicks, headway, dwell_time, station_name, station_dis):
-    if any(n_clicks):
-        graph_fig = generate_graph(headway, dwell_time, station_name, station_dis)
-        return graph_fig
+    if n_clicks[0] is None:
+        raise PreventUpdate
     else:
-        dash.no_update
+        graph_fig = generate_graph(headway, dwell_time, station_name, station_dis)
+        return graph_fig, {'style': 'visible'}
 
 if __name__ == '__main__':
-    app.run_server(debug=False, threaded=True, port=8002)
+    app.run_server(debug=True, threaded=True, port=8002)
