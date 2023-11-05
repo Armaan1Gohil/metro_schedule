@@ -2,6 +2,8 @@
 
 Welcome to the Metro Train Schedule Graph App, a Python-based application developed using Dash by Plotly, Pandas, Matplotlib, and Numpy. This app allows you to visualize train schedules with station chainage and travel times, customize headway and dwell time settings, and generate dynamic graphs for different scenarios.
 
+Application is hosted for free, hence takes time to load.
+
 ## Features
 
 - Visualizes the train schedule with station chainage and travel times.
