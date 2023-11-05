@@ -157,10 +157,38 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
 
     return fig
 
+clarity_tracking_code = """
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "jhgwrliuco");
+</script>
+"""
+
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
  
-app.title = 'Train Schedule' 
+app.title = 'Train Schedule'
+
+app.index_string = f'''
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My Dash App</title>
+        {clarity_tracking_code}
+    </head>
+    <body>
+        {{app_entry}}
+        <footer>
+            {{config}}
+            {{scripts}}
+            <script type="text/javascript">console.log('Custom script');</script>
+        </footer>
+    </body>
+</html>
+'''
  
 app.layout = dbc.Container(
     [   html.Script(
@@ -255,4 +283,4 @@ def plot_graph(n_clicks, headway, dwell_time, station_name, station_dis):
         return graph_fig, {'style': 'visible'}
 
 if __name__ == '__main__':
-    app.run_server(debug=True, threaded=True, port=8002)
+    app.run_server(debug=False, threaded=True, port=8002)
