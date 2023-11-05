@@ -157,40 +157,14 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
 
     return fig
 
-clarity_script = """
-<script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "jhgwrliuco");
-</script>
-"""
-
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
  
 app.title = 'Train Schedule'
-
-app.index_string = '''
-<!DOCTYPE html>
-<html>
-    <head>
-        {clarity_script}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            <!-- Any additional scripts can go here -->
-        </footer>
-    </body>
-</html>
-'''
  
 app.layout = dbc.Container(
-    [   html.Script(
+    [   
+        html.Script(type='text/javascript', children=[
             '''
                 (function(c,l,a,r,i,t,y){
                     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -198,7 +172,7 @@ app.layout = dbc.Container(
                     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
                 })(window, document, "clarity", "script", "jhgwrliuco");
             '''
-        ),
+            ]), 
         html.Br(),
         dbc.Card(
             [
