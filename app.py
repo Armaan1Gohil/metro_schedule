@@ -157,7 +157,7 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
 
     return fig
 
-clarity_tracking_code = """
+clarity_script = """
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -172,19 +172,18 @@ server = app.server
  
 app.title = 'Train Schedule'
 
-app.index_string = f'''
+app.index_string = '''
 <!DOCTYPE html>
 <html>
     <head>
-        <title>My Dash App</title>
-        {clarity_tracking_code}
+        {clarity_script}
     </head>
     <body>
-        {{%app_entry%}}
+        {%app_entry%}
         <footer>
-            {{%config%}}
-            {{%scripts%}}
-            <script type="text/javascript">console.log('Custom script');</script>
+            {%config%}
+            {%scripts%}
+            <!-- Any additional scripts can go here -->
         </footer>
     </body>
 </html>
