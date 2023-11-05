@@ -180,10 +180,10 @@ app.index_string = f'''
         {clarity_tracking_code}
     </head>
     <body>
-        {{app_entry}}
+        {{%app_entry%}}
         <footer>
-            {{config}}
-            {{scripts}}
+            {{%config%}}
+            {{%scripts%}}
             <script type="text/javascript">console.log('Custom script');</script>
         </footer>
     </body>
