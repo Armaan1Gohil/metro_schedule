@@ -9,64 +9,48 @@ import numpy as np
 
 def generate_graph(headway, dwell_time, station_name, station_dis):
     no_of_trains = (len(station_dis))  # No of trains running
-    train_data = {}
 
     # Generating points for graph
-    for train in range(no_of_trains):
-        train_data[f'x{train}'] = []
-        train_data[f'y{train}'] = []
+    train_data_x = []
+    train_data_y = []
 
-        ## Generating points for up line
-        
-        # Generates y-axis points
-        for station_index, dis in enumerate(station_dis): 
-            if dis == station_dis[-1]: # Helps to prevent IndexError
-                break
-            for dis_travel in range(dis, station_dis[station_index+1]+1): # Generate slope points
-                train_data[f'y{train}'].append(dis_travel)
-            
-            if dis == station_dis[-2]: # Helps to prevent IndexError
-                break
-            for _ in range(dwell_time-1): # Generating horizontal points
-                train_data[f'y{train}'].append(station_dis[station_index+1])
-                
+    ## Generating points for up line
+    # Generates y-axis points
+    for station_index, dis in enumerate(station_dis): 
+        if dis == station_dis[-1]: # Helps to prevent IndexError
+            break
+        for dis_travel in range(dis, station_dis[station_index+1]): # Generate slope points
+            train_data_y.append(dis_travel)
 
-        # Generates x-axis points
-        for l in range(len(train_data[f'y{train}'])):
-            train_data[f'x{train}'].append(l + train*(headway))
-        
-        down_train = train + no_of_trains
-        ## Generating points for down line
-        train_data[f'x{down_train}'] = [] 
-        train_data[f'y{down_train}'] = []
-        train_data[f'x{down_train}'] = train_data[f'x{train}'] # Generates x-axis points
-        train_data[f'y{down_train}'] = train_data[f'y{train}'][::-1] # Generates y-axis points
+        for _ in range(dwell_time-1): # Generating horizontal points
+            train_data_y.append(station_dis[station_index+1])
+
+
+    # Generates x-axis points
+    for l in range(len(train_data_y)):
+        train_data_x.append(l)
+
+    ## Generating points for down line
+    train_oppo_x = train_data_x # Generates x-axis points
+    train_oppo_y = train_data_y[::-1] # Generates y-axis points
         
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Plot uplines & downlines
-    for i in range(no_of_trains):
-        x_data = train_data[f'x{i}']
-        y_data = train_data[f'y{i}']
+    # # Plot up lines & down lines
+    fig.add_trace(
+        go.Scatter(x=train_data_x, y=train_data_y, mode='lines', showlegend=False, name='Upline', line=dict(color='#1f77b4'))
+    ) # Plot up lines
 
-        fig.add_trace(
-            go.Scatter(x=x_data, y=y_data, mode='lines', showlegend=False, line=dict(color='#1f77b4'))
-        ) # Plot up lines
+    fig.add_trace(
+        go.Scatter(x=train_oppo_x, y=train_oppo_y, mode='lines',  showlegend=False, name='Downline', line=dict(color='#ff7f0e'))
+    ) # Plot down lines
 
-        xo_data = train_data[f'x{i+no_of_trains}']
-        yo_data = train_data[f'y{i+no_of_trains}']
-        
-        fig.add_trace(
-            go.Scatter(x=xo_data, y=yo_data, mode='lines',  showlegend=False, line=dict(color='#ff7f0e')        
-            )
-        ) # Plot down lines
 
-        
     # Add grey line for stations
     for i, station in enumerate(station_dis): 
-        x_secondary = list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1] + 1))
-        y_secondary = [station]*(train_data[f'x{no_of_trains-1}'][-1] + 1)
-        
+        x_secondary = [train_data_x[0],train_data_x[-1]]
+        y_secondary = [station, station]
+
         line_color = 'rgba(162, 162, 161, 0.2)'
         fig.add_trace(
             go.Scatter(x=x_secondary, y=y_secondary, mode='lines', name=station_name[i], showlegend=False, line=dict(color=line_color, width=8),
@@ -74,41 +58,39 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
             secondary_y=True
         ) # Plot station lines
 
-    # Fill for start and end train graphs
-    last_x = train_data[f'x{no_of_trains - 1}']
-    last_train_up = train_data[f'y{no_of_trains - 1}']
-    last_train_down = train_data[f'y{no_of_trains}']
-    for i in range(1, len(station_dis)+1):
-        if len(last_train_up)-headway*i > 0:
-            ys = train_data['y0'][headway*(i):]
-            xs = list(np.arange(0, len(ys)))
+        # Plot fills
+        i = headway
+        while i < train_data_x[-1]:
+            # Plot up line fills
+            train_fill_x = train_data_x[i:]
+            train_fill_y = train_data_y[0:-i]
 
             fig.add_trace(
-                go.Scatter(x=xs, y=ys, mode='lines', showlegend=False, line=dict(color='#1f77b4'))
-            ) # Up start trains
-
-            ys_oppo = train_data[f'y{no_of_trains}'][headway*(i):]
-            xs_oppo = list(np.arange(0,len(ys_oppo)))
-
+                go.Scatter(x=train_fill_x, y=train_fill_y, mode='lines', showlegend=False, name='Upline', line=dict(color='#1f77b4'))
+            ) # Plot up lines
+            
+            train_fill_x_up = train_data_x[0:-i]
+            train_fill_y_up = train_data_y[i:]
             fig.add_trace(
-                go.Scatter(x=xs_oppo, y=ys_oppo, mode='lines', showlegend=False, line=dict(color='#ff7f0e')        
-                )
-            ) # Down start trains
-
-            ye = last_train_up[:len(last_train_up)-headway*i]
-            xe = list(np.arange(last_x[0]+(headway*i), last_x[0]+len(ye)+(headway*i)))
-
+                go.Scatter(x=train_fill_x_up, y=train_fill_y_up, mode='lines', showlegend=False, name='Upline', line=dict(color='#1f77b4'))
+            ) # Plot up lines
+            
+            # Plot down line fills
+            train_fill_oppo_x_up = train_oppo_x[i:]
+            train_fill_oppo_y_up = train_oppo_y[0:-i]
+            
             fig.add_trace(
-                go.Scatter(x=xe, y=ye, mode='lines', showlegend=False, line=dict(color='#1f77b4'))
-            ) # Up end trains
-
-            ye_oppo = last_train_down[:len(last_train_up)-headway*i]
-            xe_oppo = list(np.arange(last_x[0]+(headway*i), last_x[0]+len(ye_oppo)+(headway*i)))
-
+            go.Scatter(x=train_fill_oppo_x_up, y=train_fill_oppo_y_up, mode='lines',  showlegend=False, name='Downline', line=dict(color='#ff7f0e'))
+            ) # Plot down lines
+            
+            train_fill_oppo_x = train_oppo_x[0:-i]
+            train_fill_oppo_y = train_oppo_y[i:]
+            
             fig.add_trace(
-                go.Scatter(x=xe_oppo, y=ye_oppo, mode='lines', showlegend=False, line=dict(color='#ff7f0e')        
-                )
-            ) # Down end trains
+            go.Scatter(x=train_fill_oppo_x, y=train_fill_oppo_y, mode='lines',  showlegend=False, name='Downline', line=dict(color='#ff7f0e'))
+            ) # Plot down lines
+            
+            i += headway
 
     # Create legend entries for "upline" and "downline"
     fig.add_trace(go.Scatter(x=[None], y=[None], mode='lines', line=dict(color='#1f77b4'), name='Upline'))
@@ -143,7 +125,6 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
             title=dict(text='Time in Minutes'),
             ticks='outside',
             tickmode='array',
-            tickvals=list(np.arange(0, train_data[f'x{no_of_trains-1}'][-1]+1, step=headway)) + [train_data[f'x{no_of_trains - 1}'][-1]] + [last_x],
         ),
         
         yaxis=dict(
