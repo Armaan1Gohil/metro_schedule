@@ -16,16 +16,16 @@ def generate_graph(headway, dwell_time, station_name, station_dis):
 
     ## Generating points for up line
     # Generates y-axis points
-    for station_index, dis in enumerate(station_dis): 
-        if dis == station_dis[-1]: # Helps to prevent IndexError
-            break
-        for dis_travel in range(dis, station_dis[station_index+1]): # Generate slope points
+    for i in range(len(station_dis) - 1):
+        for dis_travel in range(station_dis[i], station_dis[i+1]): # Generate slope points
             train_data_y.append(dis_travel)
 
-        for _ in range(dwell_time-1): # Generating horizontal points
-            train_data_y.append(station_dis[station_index+1])
-
-
+        for _ in range(dwell_time): # Generating horizontal points
+            train_data_y.append(station_dis[i+1])
+            
+    if dwell_time != 1:
+        train_data_y = train_data_y[0:-dwell_time+1]
+            
     # Generates x-axis points
     for l in range(len(train_data_y)):
         train_data_x.append(l)
